@@ -1,0 +1,45 @@
+services:
+  node1:
+    build: .
+    environment:
+      NODE_ID: node1
+      PORT: 8000
+      PEERS: http://node2:8000,http://node3:8000
+      ALL_NODES: 3
+      DB_PATH: /data/ledger.db
+    ports: ["8001:8000"]
+    volumes: ["node1-data:/data"]
+    networks: ["consortium"]
+
+  node2:
+    build: .
+    environment:
+      NODE_ID: node2
+      PORT: 8000
+      PEERS: http://node1:8000,http://node3:8000
+      ALL_NODES: 3
+      DB_PATH: /data/ledger.db
+    ports: ["8002:8000"]
+    volumes: ["node2-data:/data"]
+    networks: ["consortium"]
+
+  node3:
+    build: .
+    environment:
+      NODE_ID: node3
+      PORT: 8000
+      PEERS: http://node1:8000,http://node2:8000
+      ALL_NODES: 3
+      DB_PATH: /data/ledger.db
+      BYZANTINE: "true"
+    ports: ["8003:8000"]
+    volumes: ["node3-data:/data"]
+    networks: ["consortium"]
+
+networks:
+  consortium:
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:
