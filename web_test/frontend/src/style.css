@@ -1,0 +1,81 @@
+:root {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #17202f;
+  background: #edf2f7;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(75, 99, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 85% 80%, rgba(30, 180, 155, 0.18), transparent 30%),
+    #f6f8fc;
+}
+
+.login-card {
+  width: min(100%, 420px);
+  padding: 42px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(23, 32, 47, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(46, 55, 90, 0.14);
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: white;
+  background: #4b63ff;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.eyebrow { margin: 28px 0 8px; color: #4b63ff; font-size: 12px; font-weight: 800; letter-spacing: 0.16em; }
+h1 { margin: 0; font-size: 34px; letter-spacing: -0.04em; }
+.subtitle { margin: 10px 0 30px; color: #6c7485; }
+form { display: grid; gap: 10px; }
+label { margin-top: 8px; font-size: 14px; font-weight: 700; }
+input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #d8deea;
+  border-radius: 12px;
+  background: #fbfcff;
+  font: inherit;
+  outline: none;
+  transition: border-color 160ms, box-shadow 160ms;
+}
+input:focus { border-color: #4b63ff; box-shadow: 0 0 0 4px rgba(75, 99, 255, 0.12); }
+button {
+  margin-top: 16px;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  background: #263ad7;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+button:hover { background: #1e2eb4; }
+button:disabled { cursor: wait; opacity: 0.65; }
+.message { margin: 18px 0 0; padding: 12px 14px; border-radius: 10px; font-size: 14px; }
+.message.success { color: #08775e; background: #e7f8f3; }
+.message.error { color: #b42318; background: #fff0ee; }
+.hint { margin: 24px 0 0; color: #8b93a3; font-size: 13px; text-align: center; }
+
+@media (max-width: 520px) {
+  .login-card { padding: 30px 24px; }
+  h1 { font-size: 30px; }
+}

@@ -1,0 +1,5 @@
+backend/__pycache__/
+backend/users.db
+frontend/node_modules/
+output/
+web_test/frontend/node_modules
