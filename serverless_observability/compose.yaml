@@ -1,0 +1,24 @@
+services:
+  serverless-runtime:
+    build: .
+    container_name: serverless-exam-demo
+    ports:
+      - "8080:8080"
+    environment:
+      - DATA_DIR=/data
+      - SCALE_TO_ZERO_SECONDS=8
+      - MAX_INSTANCES=8
+      # 改成 1 后重新启动，可体验“预置并发”消除首次冷启动。
+      - PROVISIONED_INSTANCES=0
+    volumes:
+      - runtime-data:/data
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 256m
+
+volumes:
+  runtime-data:
+

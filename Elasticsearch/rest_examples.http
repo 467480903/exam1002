@@ -1,0 +1,87 @@
+### VS Code 安装 REST Client 插件后，可逐段执行；也可以改写为 curl。
+
+### 1. 查看集群状态
+GET http://localhost:9200/_cluster/health
+
+### 2. 查看 products 的 Mapping
+GET http://localhost:9200/products/_mapping
+
+### 3. 按 ID 查询
+GET http://localhost:9200/products/_doc/5
+
+### 4. 全文搜索：match 会对查询文本进行分析
+POST http://localhost:9200/products/_search
+Content-Type: application/json
+
+{
+  "query": {
+    "match": {
+      "description": "搜索引擎"
+    }
+  }
+}
+
+### 5. term 是精确匹配，通常用于 keyword、数字、状态值
+POST http://localhost:9200/products/_search
+Content-Type: application/json
+
+{
+  "query": {
+    "term": {
+      "category": "图书"
+    }
+  }
+}
+
+### 6. bool 组合过滤条件
+POST http://localhost:9200/products/_search
+Content-Type: application/json
+
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"description": "蓝牙"}}
+      ],
+      "filter": [
+        {"range": {"price": {"lte": 300}}},
+        {"range": {"stock": {"gt": 0}}}
+      ]
+    }
+  },
+  "sort": [
+    {"price": "asc"}
+  ]
+}
+
+### 7. 聚合：按类别计数并计算平均价格
+POST http://localhost:9200/products/_search
+Content-Type: application/json
+
+{
+  "size": 0,
+  "aggs": {
+    "by_category": {
+      "terms": {"field": "category"},
+      "aggs": {
+        "avg_price": {"avg": {"field": "price"}}
+      }
+    }
+  }
+}
+
+### 8. 查看分词结果，帮助理解倒排索引
+POST http://localhost:9200/products/_analyze
+Content-Type: application/json
+
+{
+  "field": "description",
+  "text": "学习全文检索和分布式搜索引擎"
+}
+
+### 9. 查看索引及分片
+GET http://localhost:9200/_cat/indices?v
+
+### 10. 查看分片分布
+GET http://localhost:9200/_cat/shards/products?v
+

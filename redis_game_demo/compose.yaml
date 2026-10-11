@@ -1,0 +1,110 @@
+services:
+  # 默认场景：两个独立实例用于横向比较 RDB 与 AOF。
+  redis-rdb:
+    image: redis:8.2-alpine
+    container_name: redis-game-rdb
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./config/rdb.conf:/usr/local/etc/redis/redis.conf:ro
+      - rdb-data:/data
+    healthcheck: &redis-health
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+  redis-aof:
+    image: redis:8.2-alpine
+    container_name: redis-game-aof
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./config/aof.conf:/usr/local/etc/redis/redis.conf:ro
+      - aof-data:/data
+    healthcheck: *redis-health
+
+  # 高可用场景：使用 --profile sentinel 显式启动。
+  redis-primary:
+    image: redis:8.2-alpine
+    profiles: ["sentinel"]
+    container_name: redis-game-primary
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    ports:
+      - "6381:6379"
+    volumes:
+      - primary-data:/data
+    healthcheck: *redis-health
+
+  redis-replica-1:
+    image: redis:8.2-alpine
+    profiles: ["sentinel"]
+    container_name: redis-game-replica-1
+    command: ["redis-server", "--replicaof", "redis-primary", "6379", "--appendonly", "yes"]
+    ports:
+      - "6382:6379"
+    volumes:
+      - replica1-data:/data
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+
+  redis-replica-2:
+    image: redis:8.2-alpine
+    profiles: ["sentinel"]
+    container_name: redis-game-replica-2
+    command: ["redis-server", "--replicaof", "redis-primary", "6379", "--appendonly", "yes"]
+    ports:
+      - "6383:6379"
+    volumes:
+      - replica2-data:/data
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+
+  sentinel-1: &sentinel
+    image: redis:8.2-alpine
+    profiles: ["sentinel"]
+    command: ["sh", "-c", "cp /config/sentinel.conf /tmp/sentinel.conf && exec redis-sentinel /tmp/sentinel.conf"]
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./config/sentinel.conf:/config/sentinel.conf:ro
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+      redis-replica-1:
+        condition: service_started
+      redis-replica-2:
+        condition: service_started
+
+  sentinel-2:
+    <<: *sentinel
+    container_name: redis-game-sentinel-2
+    ports:
+      - "26380:26379"
+
+  sentinel-3:
+    <<: *sentinel
+    container_name: redis-game-sentinel-3
+    ports:
+      - "26381:26379"
+
+  client:
+    build: .
+    profiles: ["sentinel"]
+    command: ["sleep", "infinity"]
+    depends_on:
+      - sentinel-1
+      - sentinel-2
+      - sentinel-3
+
+volumes:
+  rdb-data:
+  aof-data:
+  primary-data:
+  replica1-data:
+  replica2-data:
+
