@@ -8,6 +8,7 @@ from crypto_utils import sha256_hex
 
 class Ledger:
     def __init__(self, path: str):
+        self.path = path
         self.db = sqlite3.connect(path, check_same_thread=False)
         self.db.execute(
             "CREATE TABLE IF NOT EXISTS blocks (height INTEGER PRIMARY KEY, hash TEXT UNIQUE, body TEXT NOT NULL)"
@@ -39,6 +40,23 @@ class Ledger:
     def tip_hash(self) -> str:
         row = self.db.execute("SELECT hash FROM blocks ORDER BY height DESC LIMIT 1").fetchone()
         return row[0] if row else "0" * 64
+
+    def verify_chain(self) -> tuple[bool, str]:
+        """重新计算整条链，检查区块哈希和前后链接是否完整。"""
+        blocks = self.blocks()
+        if not blocks:
+            return False, "账本为空"
+
+        expected_previous = "0" * 64
+        for expected_height, block in enumerate(blocks):
+            if block.get("height") != expected_height:
+                return False, f"区块高度不连续：期望 {expected_height}"
+            if block.get("previous_hash") != expected_previous:
+                return False, f"区块 {expected_height} 的前序哈希错误"
+            if block.get("hash") != self.block_hash(block):
+                return False, f"区块 {expected_height} 内容或哈希被篡改"
+            expected_previous = block["hash"]
+        return True, "SHA-256 哈希链完整"
 
     def state(self) -> tuple[dict, dict]:
         balances = dict(GENESIS_BALANCES)

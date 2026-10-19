@@ -24,7 +24,44 @@ def health():
 @app.get("/state")
 def state():
     balances, nonces = ledger.state()
-    return jsonify({"node": NODE_ID, "height": ledger.height(), "tip": ledger.tip_hash(), "balances": balances, "nonces": nonces})
+    chain_valid, chain_reason = ledger.verify_chain()
+    return jsonify({
+        "node": NODE_ID,
+        "height": ledger.height(),
+        "tip": ledger.tip_hash(),
+        "balances": balances,
+        "nonces": nonces,
+        "storage": {"engine": "SQLite", "path": ledger.path, "local_copy": True},
+        "chain_integrity": {"valid": chain_valid, "reason": chain_reason},
+    })
+
+
+@app.get("/features")
+def features():
+    """返回本教学节点所展示的四类区块链机制。"""
+    return jsonify({
+        "node": NODE_ID,
+        "cryptography": {
+            "transaction_signature": "Ed25519",
+            "block_hash": "SHA-256",
+            "hash_linked_blocks": True,
+        },
+        "smart_contract": {
+            "name": "PaymentContract",
+            "rules": ["联盟成员", "数字签名", "正整数金额", "余额", "连续nonce"],
+        },
+        "consensus": {
+            "type": "教学用多数表决",
+            "nodes": ALL_NODES,
+            "quorum": QUORUM,
+            "byzantine": BYZANTINE,
+        },
+        "distributed_storage": {
+            "engine": "SQLite",
+            "path": ledger.path,
+            "replicas": ALL_NODES,
+        },
+    })
 
 
 @app.get("/chain")
