@@ -60,7 +60,10 @@ def embed(text: str) -> list[float]:
 
 
 def connect(url: str) -> QdrantClient:
-    return QdrantClient(url=url, timeout=5)
+    # 本实验连接的是本机 Docker 容器，不应经过 HTTP/SOCKS 代理。
+    # trust_env=False 可防止 httpx 读取 ALL_PROXY 等环境变量；否则某些
+    # Linux 代理工具设置的 socks:// 地址会导致客户端尚未连接就报错。
+    return QdrantClient(url=url, timeout=5, trust_env=False)
 
 
 def init_collection(client: QdrantClient) -> None:

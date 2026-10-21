@@ -74,6 +74,23 @@ python demo.py rag "双臂抓取长工件为什么不稳定"
 
 Qdrant管理界面：<http://localhost:6333/dashboard>
 
+### 如果出现 `Unknown scheme for proxy URL`
+
+这是系统设置了 `ALL_PROXY=socks://...`，而客户端把访问本机Qdrant的请求也交给了代理。当前示例已在连接代码中设置 `trust_env=False`，访问 `localhost:6333` 时会忽略这些代理变量。
+
+也可以在终端临时设置本机地址不经过代理：
+
+```bash
+export NO_PROXY=localhost,127.0.0.1
+export no_proxy=localhost,127.0.0.1
+```
+
+然后重新执行：
+
+```bash
+python demo.py init
+```
+
 ## 4. 程序运行流程
 
 ```text

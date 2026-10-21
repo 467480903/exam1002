@@ -1,0 +1,9 @@
+services:
+  lance-data-viewer:
+    image: ghcr.io/lance-format/lance-data-viewer:stable
+    container_name: lance-data-viewer
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/so101_pickplace_lance:/data:ro
+    restart: unless-stopped
